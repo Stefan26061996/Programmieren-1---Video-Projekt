@@ -1,3 +1,7 @@
+
+
+from position_selector import PositionSelector
+
 from moviepy import (
     VideoFileClip,
     ImageClip,
@@ -64,23 +68,26 @@ class MediaLoader:
 
 
 class TextOverlay:
-    def __init__(self, text, opacity):
+    def __init__(self, text, opacity, fontsize=80):
         self.text = text
         self.opacity = opacity
+        self.fontsize = fontsize   # ✔ korrekt
 
     def create(self):
         return (
             TextClip(
                 text=self.text,
                 font="arial",
-                font_size=80,
+                font_size=self.fontsize,   # ✔ korrekt
                 color="black",
                 size=(800, 200),
                 method="caption",
             )
             .with_opacity(self.opacity)
-            .with_position((1000, 100))
         )
+
+
+
 
 
 class Exporter:
@@ -107,13 +114,29 @@ def main():
     try:
         files = FileScanner.scan()
         selected_file = FileScanner.choose(files)
+        # Freeze-Frame holen
 
         opacity = UserInput.ask_opacity()
         media_type, background = MediaLoader.load(selected_file)
+        frame = background.get_frame(0)
 
-        text_overlay = TextOverlay("Moin Meister", opacity).create()
+        # Position auswählen
+        selector = PositionSelector(frame, text="Moin Meister")
+        x, y = selector.select()
+
+
+
+        (position_x, position_y), scale = selector.select()
+
+        fontsize = int(40 * scale)
+
+        text_overlay = (
+            TextOverlay("Moin Meister", opacity, fontsize)
+            .create()
+            .with_position((position_x, position_y))
+        )
+
         output_name = os.path.splitext(selected_file)[0] + "_result"
-
         if media_type == "video":
             Exporter.export_video(background, text_overlay, output_name)
         else:
