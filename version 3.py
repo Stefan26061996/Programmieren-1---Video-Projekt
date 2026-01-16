@@ -428,3 +428,5 @@ if __name__ == "__main__":
         print(f"❌ Fehlende Abhängigkeit: {e}")
         print("\n📦 Bitte installieren mit:")
         print("   pip install opencv-python moviepy numpy pillow")
+
+        #sauce
